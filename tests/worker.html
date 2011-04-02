@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset=UTF-8>
+	<title>Worker tests</title>
+	<style type="text/css">
+	#result {
+	position: fixed; top: 2em; right: 0;
+	font-family: monospace;
+	white-space: nowrap;
+	}
+	.support {
+		color: #080;
+	}
+	.not_support {
+		color: #800;
+	}
+	</style>
+</head>
+<body>
+<h2>Detection</h2>
+<p id="detect_native_worker">Native web worker.</p>
+<p id="detect_worker_loaded">Simulated worker.</p>
+<h2>Tests</h2>
+<form method="post" action="#" id="worker">
+	<p>Run 3 seconds of while(true) <input type="submit" value="test" /></p>
+</form>
+<form method="post" action="#" id="native_worker">
+	<p>Same test above but use native worker <input type="submit" value="test" /></p>
+</form>
+<h2>Endless computation that doesn't work with simulated worker</h2>
+<form method="post" action="#" id="prime">
+	<p>find prime numbers (<a href="https://secure.wikimedia.org/wikipedia/en/wiki/Web_Workers#Example">example</a> from Wikipedia)
+	<input style="color: #f00" type="submit" value="start" />
+	<input type="button" value="stop" class="prime_stop" /></p>
+	<p>Current: <span id="prime_output"></span></p>
+</form>
+<form method="post" action="#" id="native_prime">
+	<p>Same test above but use native worker <input type="submit" value="start" />
+	<input type="button" value="stop" class="prime_stop" /></p>
+	<p>Current: <span id="native_prime_output"></span></p>
+</form>
+<h2>Modified prime finder that works on both workers</h2>
+<form method="post" action="#" id="prime_modified">
+	<p>Simulated worker <input type="submit" value="start" />
+	<input type="button" value="stop" class="prime_stop" /></p>
+	<p>Current: <span id="prime_modified_output"></span></p>
+</form>
+<form method="post" action="#" id="native_prime_modified">
+	<p>Native worker <input type="submit" value="start" />
+	<input type="button" value="stop" class="prime_stop" /></p>
+	<p>Current: <span id="native_prime_modified_output"></span></p>
+</form>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+<script type="text/javascript">
+window.forceIframeWorker = true;
+</script>
+<script type="text/javascript" src="../worker.js"></script>
+<script type="text/javascript">
+jQuery(function ($) {
+	$('#detect_native_worker').addClass((((window.Worker && !window.Worker.notNative) || window.nativeWorker)?'':'not_') + 'support');
+	$('#detect_worker_loaded').addClass((window.Worker.notNative?'':'not_') + 'support');
+
+	window.Worker.iframeURI = '../worker.iframe.html';
+	window.Worker.baseURI = './tests/';
+
+	$('#worker').bind(
+		'submit',
+		function () {
+			var w = new Worker('./test.worker.js');
+			w.onmessage = function(ev) {
+				alert(ev.data);
+				w.terminate(); // No effect on native worker at here, but removes iframe for simulated worker.
+			};
+			w.postMessage('3 second while(true). UI blocks.');
+			return false;
+		}
+	);
+
+	$('#native_worker').bind(
+		'submit',
+		function () {
+			var w = new nativeWorker('./test.worker.js');
+			w.onmessage = function(ev) {
+				alert(ev.data);
+				w.terminate(); // No effect on native worker at here, but removes iframe for simulated worker.
+			};
+			w.postMessage('3 second while(true). UI doesn\'t block.');
+			return false;
+		}
+	);
+
+	var p;
+	$('.prime_stop').bind(
+		'click',
+		function () {
+			p.terminate();
+		}
+	);
+
+	$('#prime').bind(
+		'submit',
+		function () {
+			var $o = $('#prime_output');
+			p = new Worker('./prime.worker.js');
+			p.onmessage = function(ev) {
+				$o.text(ev.data);
+			};
+			return false;
+		}
+	);
+	$('#native_prime').bind(
+		'submit',
+		function () {
+			var $o = $('#native_prime_output');
+			p = new nativeWorker('./prime.worker.js');
+			p.onmessage = function(ev) {
+				$o.text(ev.data);
+			};
+			return false;
+		}
+	);
+	$('#prime_modified').bind(
+		'submit',
+		function () {
+			var $o = $('#prime_modified_output');
+			p = new Worker('./prime-modified.worker.js');
+			p.onmessage = function(ev) {
+				$o.text(ev.data);
+			};
+			return false;
+		}
+	);
+	$('#native_prime_modified').bind(
+		'submit',
+		function () {
+			var $o = $('#native_prime_modified_output');
+			p = new nativeWorker('./prime-modified.worker.js');
+			p.onmessage = function(ev) {
+				$o.text(ev.data);
+			};
+			return false;
+		}
+	);
+});
+
+</script>
+</body>
+</html>
