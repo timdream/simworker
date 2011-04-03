@@ -16,7 +16,7 @@ if (!window.Worker || window.forceIframeWorker) {
 			
 			w.Worker = window.Worker; // yes, worker could spawn another worker!
 			w.onmessage = function (ev) {}; // placeholder function
-			w.postMessage = function (data) {
+			var postMessage = function (data) {
 				if (typeof worker.onmessage === 'function') {
 					worker.onmessage.call(
 						worker,
@@ -29,7 +29,11 @@ if (!window.Worker || window.forceIframeWorker) {
 						}
 					);
 				}
-			};	
+			};
+			w.postMessage = w.workerPostMessage = postMessage;
+			if (w.postMessage !== postMessage) {
+				// IE doesn't allow overwriting postMessage
+			}
 			w.close = function () {
 				worker.terminate();
 			};

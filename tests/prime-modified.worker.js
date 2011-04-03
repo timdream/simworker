@@ -1,3 +1,5 @@
+var send = (typeof workerPostMessage !== 'undefined')?workerPostMessage:postMessage;
+
 var n = 1;
 
 function find () {
@@ -6,7 +8,7 @@ function find () {
     if (n % i == 0)
       return;
   // found a prime!
-  postMessage(n);
+  send(n);
 }
 
 if (typeof window === 'undefined') { // We are in Worker scope

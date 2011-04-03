@@ -1,7 +1,7 @@
 Simulated Web Workers Interface
 ==========================
 
-Web Workers for IEs and Mobile Safari.
+Web Workers for IEs and Mobile Safari. For IEs currently works with IE9 only.
 
 Auther: Timothy Chien &lt;timdream@gmail.com&gt;
 
@@ -16,6 +16,12 @@ Same as the native Web Workers, except a few things to note:
 3. Native Web Workers will be recycled automatically, simulated Worker lived
    in IFRAME that can only be removed by executing `worker.terminate()` 
    explicitly when you finish using Worker.
+4. IEs doesn't allow overwritten of `window.postMessage()`, so for a worker
+   script to work in both native worker and simulated in IE, create a new
+   variable at the very top of the worker script that points to the correct 
+   function:
+   `var send = (typeof workerPostMessage !== 'undefined')?workerPostMessage:postMessage;`
+   and use `send()` instead of `postMessage()` within the script.
 
 # What it does
 
