@@ -1,7 +1,7 @@
 Simulated Web Workers Interface
 ==========================
 
-Web Workers for IEs and Mobile Safari. For IEs currently works with IE9 only.
+Web Workers for IEs and Mobile Safari.
 
 Auther: Timothy Chien &lt;timdream@gmail.com&gt;
 
