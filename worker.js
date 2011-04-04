@@ -1,3 +1,5 @@
+"use stricts";
+
 if (!window.Worker || window.forceIframeWorker) {
 	if (window.Worker) window.nativeWorker = window.Worker;
 	window.Worker = function (script) {
