@@ -5,6 +5,25 @@ Web Workers for IEs and Mobile Safari.
 
 Auther: Timothy Chien &lt;timdream@gmail.com&gt;
 
+## What it does
+
+This script creates a Worker interface for browsers without it. When you create 
+a instance of it, it opens up an IFRAME, prepare the necessary functions, inject 
+your script into it, and listened to `worker.postMessage()` issued and process
+`onmessage` event just like a native Worker.
+
+## What it doesn't do
+
+The script doesn't do the magic of taking the task background. Executions still 
+block UI, and like any other foreground functions they are subjected to runaway 
+timer imposed by the browser. Due to the reason addressed above, not all worker 
+programs are suitable to use simulated worker.
+
+For a long complication, you could modify the loop using 
+`setTimeout(function () { ... }, 0);` to prevent UI blocking.
+
+Please check the testcases' code for example.
+
 ## Usage
 
 Same as the native Web Workers, except a few things to note:
@@ -22,22 +41,3 @@ Same as the native Web Workers, except a few things to note:
    function:
    `var send = (typeof workerPostMessage !== 'undefined')?workerPostMessage:postMessage;`
    and use `send()` instead of `postMessage()` within the script.
-
-# What it does
-
-This script creates a Worker interface for browsers without it. When you create 
-a instance of it, it opens up an IFRAME, prepare the necessary functions, inject 
-your script into it, and listened to `worker.postMessage()` issued and process
-`onmessage` event just like a native Worker.
-
-# What it doesn't to
-
-The script doesn't do the magic of taking the task background. Executions still 
-block UI, and like any other foreground functions they are subjected to runaway 
-timer imposed by the browser. Due to the reason addressed above, not all worker 
-programs are suitable to use simulated worker.
-
-For a long complication, you could modify the loop using 
-`setTimeout(function () { ... }, 0);` to prevent UI blocking.
-
-Please check the testcases' code for example.
