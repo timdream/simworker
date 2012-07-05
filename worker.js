@@ -89,7 +89,9 @@ if (!window.Worker || window.forceIframeWorker) {
 			function () {
 				worker._quere.push(
 					function () {
-						worker._iframeEl.contentWindow.onmessage({data:obj});
+						// IE8 throws an error if we call worker._iframeEl.contentWindow.onmessage() directly
+						var win = worker._iframeEl.contentWindow, onmessage = win.onmessage;
+						onmessage.call(win, {data:obj});
 					}
 				);
 			},
