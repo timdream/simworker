@@ -16,6 +16,22 @@ if (!window.Worker || window.forceIframeWorker) {
 			var w = this.contentWindow,
 			doc = this.contentWindow.document;
 			
+			function injectScript(script, callback) {
+				var scriptEl = doc.createElement('script');
+				scriptEl.src = script;
+				scriptEl.type = 'text/javascript';
+				scriptEl.onload = scriptEl.onreadystatechange = function () {
+					if (scriptEl.readyState && scriptEl.readyState !== "loaded" && scriptEl.readyState !== "complete") return;
+					scriptEl.onload = scriptEl.onreadystatechange = null;
+					doc.body.removeChild(scriptEl);
+					scriptEl = null;
+					if (callback) {
+						callback();
+					}
+				};
+				doc.body.appendChild(scriptEl);
+			}
+
 			// Some interfaces within the Worker scope.
 			
 			w.Worker = window.Worker; // yes, worker could spawn another worker!
@@ -43,18 +59,12 @@ if (!window.Worker || window.forceIframeWorker) {
 			};
 			w.importScripts = function () {
 				for (var i = 0; i < arguments.length; i++) {
-					var scriptEl = doc.createElement('script');
-					scriptEl.src = window.Worker.baseURI + arguments[i];
-					scriptEl.type = 'text/javascript';
-					doc.body.appendChild(scriptEl);
+					injectScript(window.Worker.baseURI + arguments[i]);
 				}
 			}
 
 			// inject worker script into iframe			
-			var scriptEl = doc.createElement('script');
-			scriptEl.src = window.Worker.baseURI + script;
-			scriptEl.type = 'text/javascript';
-			scriptEl.onload = function () {
+			injectScript(window.Worker.baseURI + script, function () {
 				worker._quere.push = function (callback) {
 					if (!worker._unloaded) {
 						callback();
@@ -65,8 +75,7 @@ if (!window.Worker || window.forceIframeWorker) {
 						(worker._quere.shift())();
 					}
 				}
-			};
-			doc.body.appendChild(scriptEl);
+			});
 		};
 		this._iframeEl.src = window.Worker.iframeURI;
 		(document.getElementsByTagName('head')[0] || document.body).appendChild(this._iframeEl);
